@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const corsOptions = {
-    origin: 'http://127.0.0.1:5173', // Allow only requests from this origin
+    origin: ['http://127.0.0.1:5173','192.168.0.7:5173'], // Allow only requests from this origin
 };
 
 app.use(cors(corsOptions));
@@ -85,12 +85,30 @@ sequelize.sync({ alter: true }).then(() => {
 app.post('/upload', auth, upload.single('myFile'), async (req, res) => {
     if (!req.file) return res.status(400).send('No file uploaded.');
     
-    const savedFilePath = req.file.path;
+    
     
     try {
-
+        const savedFilePath = req.file.path;
         // Giả sử lấy từ Auth
         const ownerId = req.user.userId; 
+    
+    const LIMIT_PER_USER = process.env.STORAGE * 1024 * 1024 * 1024;
+
+        // 1. Tính tổng dung lượng các file hiện có của User này
+        const totalUsed = await File.sum('size', { 
+            where: { ownerId: ownerId, isDeleted: false } 
+        }) || 0;
+
+        // 2. Kiểm tra xem file mới có làm vượt hạn mức không
+        if (totalUsed + req.file.size > LIMIT_PER_USER) {
+            // XÓA FILE VẬT LÝ: Vì Multer đã lỡ lưu file vào thư mục 'uploads' rồi
+            fs.unlinkSync(req.file.path); 
+            
+            return res.status(403).json({ 
+                error: "Dung lượng bộ nhớ đã hết! Vui lòng nâng cấp hoặc xóa bớt file." 
+            });
+        }
+
 
         // Lưu vào Database bằng Sequelize
         const newFile = await File.create({
@@ -259,7 +277,7 @@ app.get('/storage-stats/', auth, async (req, res) => {
     // Giả sử bạn dùng Sequelize hoặc SQL thuần để tính tổng cột 'size'
     const totalSize = await File.sum('size', { where: { ownerId } }) || 0;
 
-    const LIMIT = 5 * 1024 * 1024 * 1024; // 5GB tính bằng bytes
+    const LIMIT = process.env.STORAGE * 1024 * 1024 * 1024; // 5GB tính bằng bytes
 
     res.json({
       used: totalSize,      // byte
