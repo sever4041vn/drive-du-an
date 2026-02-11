@@ -1,0 +1,49 @@
+# Dependencies (Thư viện - Tuyệt đối không push cái này vì nó rất nặng)
+node_modules/
+dist/
+build/
+
+# Environment Variables (Bảo mật - Chứa mật khẩu Database, JWT Secret)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database (Nếu bạn dùng SQLite hoặc có file dump dữ liệu)
+*.sqlite
+*.sql
+db_backup/
+
+# Logs (File ghi lỗi của hệ thống)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# OS Metadata (File rác của hệ điều hành)
+.DS_Store
+Thumbs.db
+
+# User Uploads (Quan trọng: Không nên push file người dùng đã upload lên server)
+# Giả sử bạn lưu file trong folder 'uploads' ở backend
+backend/uploads/
+uploads/
+
+# Editor Settings (Cấu hình riêng của VS Code hoặc các IDE)
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
